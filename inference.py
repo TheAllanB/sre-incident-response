@@ -22,10 +22,10 @@ load_dotenv()
 
 # ─── Configuration ─────────────────────────────────────────────────────────────
 
-API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY") or os.getenv("OPENAI_API_KEY")
-API_BASE_URL = os.getenv("API_BASE_URL") or "https://api.openai.com/v1"
-MODEL_NAME = os.getenv("MODEL_NAME") or "gpt-4o"
-ENV_BASE_URL = os.getenv("ENV_BASE_URL") or "http://localhost:7860"
+API_BASE_URL = os.getenv("API_BASE_URL", "https://api.groq.com/openai/v1")
+MODEL_NAME = os.getenv("MODEL_NAME", "llama-3.1-8b-instant")
+HF_TOKEN = os.getenv("HF_TOKEN")
+ENV_BASE_URL = os.getenv("ENV_BASE_URL", "http://localhost:7860")
 
 TASKS = [
     "single_service_crash",
@@ -280,7 +280,7 @@ SYSTEM_PROMPT = textwrap.dedent("""
 # ─── Helpers ───────────────────────────────────────────────────────────────────
 
 def get_client() -> OpenAI:
-    return OpenAI(api_key=API_KEY, base_url=API_BASE_URL)
+    return OpenAI(api_key=HF_TOKEN, base_url=API_BASE_URL)
 
 
 def call_llm_with_retry(client: OpenAI, **kwargs) -> object:
@@ -484,8 +484,8 @@ def run_task(task_id: str) -> None:
 
 
 if __name__ == "__main__":
-    if not API_KEY:
-        print("ERROR: Set HF_TOKEN, API_KEY, or OPENAI_API_KEY", file=sys.stderr)
+    if not HF_TOKEN:
+        print("ERROR: Set HF_TOKEN environment variable", file=sys.stderr)
         sys.exit(1)
 
     for task_id in TASKS:

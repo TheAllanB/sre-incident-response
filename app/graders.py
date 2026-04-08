@@ -9,7 +9,7 @@ def grade(task_id: str, state: dict, ground_truth: dict) -> float:
     }
     fn = graders.get(task_id)
     if fn is None:
-        return 0.0
+        return 0.001
     return fn(state, ground_truth)
 
 
@@ -45,7 +45,7 @@ def _grade_single_service_crash(state: dict, ground_truth: dict) -> float:
     if escalations and not fix_attempts:
         score -= 0.5
 
-    return max(0.0, min(1.0, score))
+    return max(0.001, min(0.999, score))
 
 
 def _grade_cascading_failure(state: dict, ground_truth: dict) -> float:
@@ -81,7 +81,7 @@ def _grade_cascading_failure(state: dict, ground_truth: dict) -> float:
     bad_actions = [a for a in history if a["action_type"] in ("escalate", "silence_alert")]
     score -= min(len(bad_actions) * 0.2, 0.4)
 
-    return max(0.0, min(1.0, score))
+    return max(0.001, min(0.999, score))
 
 
 def _grade_silent_data_corruption(state: dict, ground_truth: dict) -> float:
@@ -136,7 +136,7 @@ def _grade_silent_data_corruption(state: dict, ground_truth: dict) -> float:
     if reporting_restarts:
         score -= 0.2
 
-    return max(0.0, min(1.0, score))
+    return max(0.001, min(0.999, score))
 
 
 def _grade_db_connection_pool_exhaustion(state: dict, ground_truth: dict) -> float:
@@ -197,7 +197,7 @@ def _grade_db_connection_pool_exhaustion(state: dict, ground_truth: dict) -> flo
     if cache_actions:
         score -= 0.10
 
-    return max(0.0, min(1.0, score))
+    return max(0.001, min(0.999, score))
 
 
 def _grade_tls_certificate_expiry(state: dict, ground_truth: dict) -> float:
@@ -264,4 +264,4 @@ def _grade_tls_certificate_expiry(state: dict, ground_truth: dict) -> float:
     if gateway_restarts:
         score -= 0.20
 
-    return max(0.0, min(1.0, score))
+    return max(0.001, min(0.999, score))

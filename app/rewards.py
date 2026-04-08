@@ -41,7 +41,7 @@ def compute_reward(state: dict, action_record: dict) -> float:
         # Check if episode is solved (score threshold reached)
         score = grade(task_id, state, ground_truth)
         if score >= 0.8:
-            return 1.0
+            return 0.99
 
     # Investigative action before any remediation
     if action_type in _INVESTIGATIVE_TYPES:
@@ -49,4 +49,4 @@ def compute_reward(state: dict, action_record: dict) -> float:
         if not prior_remediations:
             return 0.1
 
-    return 0.0
+    return 0.01

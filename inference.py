@@ -4,7 +4,7 @@ SRE Incident Response — Baseline Inference Agent
 Structured log format (all fields on one line):
   [START] task=<task_name> env=<benchmark> model=<model_name>
   [STEP]  step=<n> action=<action_str> reward=<0.00> done=<true|false> error=<msg|null>
-  [END]   success=<true|false> steps=<n> rewards=<r1,r2,...,rn>
+  [END]   success=<true|false> steps=<n> score=<score> rewards=<r1,r2,...,rn>
 """
 
 import json
@@ -55,7 +55,7 @@ def log_step(step: int, action: str, reward: float, done: bool, error: Optional[
 def log_end(success: bool, steps: int, score: float, rewards: List[float]) -> None:
     rewards_str = ",".join(f"{r:.2f}" for r in rewards)
     print(
-        f"[END] success={str(success).lower()} steps={steps} rewards={rewards_str}",
+        f"[END] success={str(success).lower()} steps={steps} score={score:.3f} rewards={rewards_str}",
         flush=True,
     )
 
@@ -405,7 +405,7 @@ def run_task(task_id: str) -> None:
 
     all_rewards: List[float] = []
     steps_taken = 0
-    score = 0.0
+    score = 0.001
     success = False
     last_result: dict = {}
     actions_taken: List[str] = []  # tracks every action for episode state injection
@@ -473,7 +473,8 @@ def run_task(task_id: str) -> None:
             if done or steps_taken >= MAX_STEPS:
                 break
 
-        score = last_result.get("info", {}).get("score", 0.0) if last_result else 0.0
+        raw_score = last_result.get("info", {}).get("score", 0.001) if last_result else 0.001
+        score = max(0.001, min(0.999, raw_score))
         success = score >= SUCCESS_SCORE_THRESHOLD
 
     except Exception as exc:

@@ -89,7 +89,7 @@ def grader(body: dict):
             raise HTTPException(status_code=400, detail=str(exc))
 
     state = {"action_history": action_history, "task_id": task_id, "ground_truth": ground_truth}
-    score = graders.grade(task_id, state, ground_truth)
+    score = max(0.001, min(0.999, graders.grade(task_id, state, ground_truth)))
     return {"task_id": task_id, "score": round(score, 3), "success": score >= 0.8}
 
 

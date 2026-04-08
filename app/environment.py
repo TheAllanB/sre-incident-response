@@ -51,7 +51,7 @@ def step(action_data: dict) -> dict:
     # Check done conditions
     ground_truth = state["ground_truth"]
     task_id = state["task_id"]
-    score = graders.grade(task_id, state, ground_truth)
+    score = max(0.001, min(0.999, graders.grade(task_id, state, ground_truth)))
 
     done = False
     if score >= 0.8:

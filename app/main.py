@@ -2,28 +2,28 @@ from pathlib import Path
 
 import yaml
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse
 
-from app import environment
+from app import environment, graders
 from app.models import Action, Observation, Reward
 
 app = FastAPI(title="SRE Incident Response Environment", version="1.0.0")
 
+REQUIRED_ENDPOINTS = ["/health", "/tasks", "/reset", "/step", "/state", "/schema", "/grader"]
 
-@app.get("/")
+
+@app.get("/", response_class=HTMLResponse)
 def root():
-    return {
+    html_file = Path("static/index.html")
+    if html_file.exists():
+        return HTMLResponse(content=html_file.read_text())
+    # Fallback JSON if static file missing
+    return HTMLResponse(content=str({
         "name": "sre-incident-response",
-        "description": "OpenEnv-compliant SRE incident triage environment",
-        "version": "1.0.0",
-        "endpoints": {
-            "health": "GET /health",
-            "tasks": "GET /tasks",
-            "reset": "POST /reset",
-            "step": "POST /step",
-            "state": "GET /state",
-            "schema": "GET /schema",
-        },
-    }
+        "status": "running",
+        "docs": "/docs",
+        "required_endpoints": REQUIRED_ENDPOINTS,
+    }))
 
 
 @app.get("/health")
@@ -64,6 +64,33 @@ def schema():
         },
         "reward": Reward.model_json_schema(),
     }
+
+
+@app.post("/grader")
+def grader(body: dict):
+    """
+    Score a completed action history without running a live episode.
+    Body: { "task_id": "single_service_crash", "action_history": [...], "ground_truth": {...} }
+    Returns: { "score": 0.0-1.0 }
+    """
+    task_id = body.get("task_id")
+    action_history = body.get("action_history", [])
+    ground_truth = body.get("ground_truth")
+
+    if not task_id:
+        raise HTTPException(status_code=400, detail="task_id is required")
+
+    # Allow caller to omit ground_truth — load it from the scenario file
+    if ground_truth is None:
+        try:
+            from app.scenarios import load_scenario
+            _, ground_truth = load_scenario(task_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
+
+    state = {"action_history": action_history, "task_id": task_id, "ground_truth": ground_truth}
+    score = graders.grade(task_id, state, ground_truth)
+    return {"task_id": task_id, "score": round(score, 3), "success": score >= 0.8}
 
 
 @app.post("/mcp")

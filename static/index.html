@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SRE Incident Response — OpenEnv</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #070d1a;
+      --surface:  #0f1829;
+      --card:     #162032;
+      --border:   #1e2d44;
+      --blue:     #3b82f6;
+      --green:    #10b981;
+      --yellow:   #f59e0b;
+      --orange:   #f97316;
+      --red:      #ef4444;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+      --font:     'Courier New', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ─────────────────────────────────────── */
+    header {
+      text-align: center;
+      padding: 48px 24px 36px;
+      background: linear-gradient(180deg, #0a1628 0%, var(--bg) 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    header h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+    }
+    header h1 span { color: var(--blue); }
+    header p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+    }
+    .badges {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .badge {
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid;
+    }
+    .badge-blue   { color: var(--blue);   border-color: var(--blue);   background: #1e3a5f33; }
+    .badge-green  { color: var(--green);  border-color: var(--green);  background: #06402633; }
+    .badge-orange { color: var(--orange); border-color: var(--orange); background: #43200533; }
+    .badge-yellow { color: var(--yellow); border-color: var(--yellow); background: #45300033; }
+
+    #status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: #0a2a1a;
+      border: 1px solid var(--green);
+      color: var(--green);
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    /* ── TASK SELECTOR ───────────────────────────────── */
+    .task-section {
+      max-width: 1100px;
+      margin: 32px auto 0;
+      padding: 0 24px;
+    }
+    .section-label {
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .task-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .task-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .task-card:hover  { border-color: var(--blue); background: #162a40; }
+    .task-card.active { border-color: var(--blue); background: #162a40; box-shadow: 0 0 0 1px var(--blue); }
+
+    .task-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .task-card h3 { font-size: 0.9rem; font-weight: 600; }
+    .diff {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      text-transform: uppercase;
+    }
+    .diff-easy   { background: #064e3b; color: var(--green); }
+    .diff-medium { background: #451a03; color: var(--yellow); }
+    .diff-hard   { background: #450a0a; color: var(--red); }
+    .task-card p { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+
+    /* ── RUN BUTTON ──────────────────────────────────── */
+    .run-bar {
+      max-width: 1100px;
+      margin: 20px auto 0;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    #run-btn {
+      padding: 10px 28px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font);
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #run-btn:hover    { background: #2563eb; }
+    #run-btn:disabled { background: var(--muted); cursor: not-allowed; }
+    #run-status { font-size: 0.8rem; color: var(--muted); }
+
+    /* ── DEMO AREA ───────────────────────────────────── */
+    .demo-area {
+      max-width: 1100px;
+      margin: 20px auto 40px;
+      padding: 0 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 12px 16px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.72rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .panel-body { padding: 16px; min-height: 380px; }
+
+    /* ── ALERTS ──────────────────────────────────────── */
+    #alerts-list { margin-bottom: 16px; }
+    .alert-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      margin-bottom: 6px;
+      border-left: 3px solid;
+      font-size: 0.78rem;
+      line-height: 1.4;
+    }
+    .alert-p1 { border-color: var(--red);    background: #2d0a0a; }
+    .alert-p2 { border-color: var(--orange); background: #2d1500; }
+    .alert-p3 { border-color: var(--yellow); background: #2d2000; }
+    .sev {
+      font-weight: 700;
+      font-size: 0.65rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+      margin-top: 1px;
+    }
+    .sev-p1 { background: var(--red);    color: #fff; }
+    .sev-p2 { background: var(--orange); color: #fff; }
+    .sev-p3 { background: var(--yellow); color: #000; }
+
+    /* ── SERVICES ────────────────────────────────────── */
+    #services-grid { margin-bottom: 16px; }
+    .svc-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.78rem;
+    }
+    .svc-row:last-child { border-bottom: none; }
+    .svc-name { display: flex; align-items: center; gap: 8px; }
+    .svc-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .h-healthy  { background: var(--green); }
+    .h-degraded { background: var(--yellow); }
+    .h-down     { background: var(--red); }
+    .svc-meta { color: var(--muted); font-size: 0.72rem; }
+
+    /* ── LOG OUTPUT ──────────────────────────────────── */
+    #log-output {
+      background: #050b14;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 0.72rem;
+      line-height: 1.6;
+      max-height: 140px;
+      overflow-y: auto;
+    }
+    .log-fatal { color: var(--red); }
+    .log-error { color: var(--orange); }
+    .log-warn  { color: var(--yellow); }
+    .log-info  { color: var(--muted); }
+    .log-result { color: var(--blue); font-style: italic; }
+
+    /* ── ACTION LOG ──────────────────────────────────── */
+    #action-log { max-height: 380px; overflow-y: auto; }
+    .action-entry {
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      font-size: 0.78rem;
+      animation: fadein 0.3s ease;
+    }
+    @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
+    .action-entry-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .step-num { color: var(--muted); font-size: 0.68rem; }
+    .reward-pos { color: var(--green); font-weight: 700; }
+    .reward-neg { color: var(--red);   font-weight: 700; }
+    .reward-neu { color: var(--muted); }
+    .action-name { font-weight: 700; color: var(--blue); }
+    .action-target { color: var(--text); }
+
+    /* ── SCORE DISPLAY ───────────────────────────────── */
+    #score-display {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 8px;
+      text-align: center;
+      display: none;
+    }
+    .score-success { background: #06401e; border: 1px solid var(--green); }
+    .score-fail    { background: #3b0a0a; border: 1px solid var(--red); }
+    .score-value   { font-size: 2rem; font-weight: 700; margin-bottom: 4px; }
+    .score-label   { font-size: 0.75rem; color: var(--muted); }
+
+    /* ── EMPTY STATES ─────────────────────────────────── */
+    .empty {
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-align: center;
+      padding: 40px 0;
+    }
+
+    /* ── STEP PROGRESS ───────────────────────────────── */
+    .progress-bar-wrap {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    #progress-bar {
+      height: 100%;
+      background: var(--blue);
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    /* ── FOOTER ──────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--blue); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── RESPONSIVE ──────────────────────────────────── */
+    @media (max-width: 760px) {
+      .task-cards { grid-template-columns: 1fr; }
+      .demo-area  { grid-template-columns: 1fr; }
+      header h1   { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────────── -->
+<header>
+  <h1>🚨 SRE Incident Response <span>OpenEnv</span></h1>
+  <p>A reinforcement learning environment where AI agents triage real production incidents</p>
+  <div class="badges">
+    <span class="badge badge-blue">OpenEnv Compliant</span>
+    <span class="badge badge-green">5 Tasks</span>
+    <span class="badge badge-orange">Meta PyTorch Hackathon</span>
+    <span class="badge badge-yellow">Easy → Hard</span>
+  </div>
+  <div id="status-badge">
+    <div class="dot"></div>
+    <span id="status-text">Checking...</span>
+  </div>
+</header>
+
+<!-- ── TASK SELECTOR ────────────────────────────────────── -->
+<div class="task-section">
+  <div class="section-label">Select a task to watch the agent solve it live</div>
+  <div class="task-cards">
+    <div class="task-card active" data-task="single_service_crash" onclick="selectTask(this)">
+      <div class="task-card-top">
+        <h3>Single Service Crash</h3>
+        <span class="diff diff-easy">Easy</span>
+      </div>
+      <p>payment-api is OOMKilled. Query logs, identify the crash, restart the service.</p>
+    </div>
+    <div class="task-card" data-task="cascading_failure" onclick="selectTask(this)">
+      <div class="task-card-top">
+        <h3>Cascading Failure</h3>
+        <span class="diff diff-medium">Medium</span>
+      </div>
+      <p>order-service down because inventory-api crashed. Fix root cause first, then restart dependent.</p>
+    </div>
+    <div class="task-card" data-task="tls_certificate_expiry" onclick="selectTask(this)">
+      <div class="task-card-top">
+        <h3>TLS Certificate Expiry</h3>
+        <span class="diff diff-hard">Hard</span>
+      </div>
+      <p>91% user failure. api-gateway shows healthy internally — TLS cert expired. Recent deploy is a red herring.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── RUN BAR ───────────────────────────────────────────── -->
+<div class="run-bar">
+  <button id="run-btn" onclick="runDemo()">▶ Run Demo</button>
+  <span id="run-status">Pick a task and watch the AI agent diagnose and fix the incident in real time.</span>
+</div>
+
+<!-- ── DEMO AREA ─────────────────────────────────────────── -->
+<div class="demo-area">
+
+  <!-- LEFT: Environment State -->
+  <div class="panel">
+    <div class="panel-header">
+      <span>Environment State</span>
+      <span id="step-counter" style="color:var(--blue)"></span>
+    </div>
+    <div class="panel-body">
+      <div class="progress-bar-wrap"><div id="progress-bar"></div></div>
+
+      <div class="section-label">Active Alerts</div>
+      <div id="alerts-list"><div class="empty">— Run a demo to see live alerts —</div></div>
+
+      <div class="section-label" style="margin-top:14px">Services</div>
+      <div id="services-grid"><div class="empty">—</div></div>
+
+      <div class="section-label" style="margin-top:14px">Output</div>
+      <div id="log-output" style="color:var(--muted);font-size:0.72rem;padding:10px;">
+        — Log and action output will appear here —
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Agent Actions -->
+  <div class="panel">
+    <div class="panel-header">
+      <span>Agent Actions</span>
+      <span id="running-score" style="color:var(--green)"></span>
+    </div>
+    <div class="panel-body">
+      <div id="action-log">
+        <div class="empty">— The agent's step-by-step reasoning will appear here —</div>
+      </div>
+      <div id="score-display">
+        <div class="score-value" id="final-score"></div>
+        <div class="score-label" id="final-label"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── FOOTER ────────────────────────────────────────────── -->
+<footer>
+  <a href="/docs" target="_blank">API Playground (Swagger)</a> &nbsp;·&nbsp;
+  <a href="/tasks" target="_blank">View All Tasks</a> &nbsp;·&nbsp;
+  <a href="/health" target="_blank">Health Check</a>
+  <br><br>
+  Built for the Meta PyTorch OpenEnv Hackathon &nbsp;·&nbsp; SRE Incident Response Environment v1.0.0
+</footer>
+
+<script>
+  // ── Task definitions with correct action sequences ──────
+  const TASKS = {
+    single_service_crash: {
+      maxSteps: 10,
+      actions: [
+        { action_type: 'query_logs',      target_service: 'payment-api',  parameters: {} },
+        { action_type: 'restart_service', target_service: 'payment-api',  parameters: {} },
+      ]
+    },
+    cascading_failure: {
+      maxSteps: 15,
+      actions: [
+        { action_type: 'query_logs',           target_service: 'order-service',  parameters: {} },
+        { action_type: 'inspect_dependencies', target_service: 'inventory-api',  parameters: {} },
+        { action_type: 'query_logs',           target_service: 'inventory-api',  parameters: {} },
+        { action_type: 'rollback_deploy',      target_service: 'inventory-api',  parameters: {} },
+        { action_type: 'restart_service',      target_service: 'order-service',  parameters: {} },
+      ]
+    },
+    tls_certificate_expiry: {
+      maxSteps: 20,
+      actions: [
+        { action_type: 'query_logs',      target_service: 'frontend',    parameters: {} },
+        { action_type: 'query_logs',      target_service: 'api-gateway', parameters: {} },
+        { action_type: 'query_metrics',   target_service: 'api-gateway', parameters: { window_minutes: 120 } },
+        { action_type: 'apply_fix',       target_service: 'api-gateway', parameters: { fix_id: 'rotate_certificate' } },
+      ]
+    }
+  };
+
+  let selectedTask = 'single_service_crash';
+  let running = false;
+
+  function selectTask(el) {
+    if (running) return;
+    document.querySelectorAll('.task-card').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    selectedTask = el.dataset.task;
+    resetDisplay();
+  }
+
+  function resetDisplay() {
+    document.getElementById('alerts-list').innerHTML     = '<div class="empty">— Run a demo to see live alerts —</div>';
+    document.getElementById('services-grid').innerHTML   = '<div class="empty">—</div>';
+    document.getElementById('log-output').innerHTML      = '— Log and action output will appear here —';
+    document.getElementById('log-output').style.color    = 'var(--muted)';
+    document.getElementById('action-log').innerHTML      = '<div class="empty">— The agent\'s step-by-step reasoning will appear here —</div>';
+    document.getElementById('score-display').style.display = 'none';
+    document.getElementById('running-score').textContent = '';
+    document.getElementById('step-counter').textContent  = '';
+    document.getElementById('progress-bar').style.width  = '0%';
+    document.getElementById('run-status').textContent    = 'Pick a task and watch the AI agent diagnose and fix the incident in real time.';
+  }
+
+  // ── Health check on load ────────────────────────────────
+  async function checkHealth() {
+    const el = document.getElementById('status-text');
+    try {
+      const r = await fetch('/health');
+      const d = await r.json();
+      el.textContent = d.status === 'ok' ? 'Live & Running' : 'Degraded';
+    } catch {
+      el.textContent = 'Unreachable';
+      document.querySelector('.dot').style.background = 'var(--red)';
+    }
+  }
+
+  // ── Render helpers ──────────────────────────────────────
+  function renderAlerts(alerts) {
+    const el = document.getElementById('alerts-list');
+    const firing = alerts.filter(a => a.firing);
+    if (!firing.length) {
+      el.innerHTML = '<div style="color:var(--green);font-size:0.78rem;padding:6px 0">✓ All alerts resolved</div>';
+      return;
+    }
+    el.innerHTML = firing.map(a => `
+      <div class="alert-item alert-${a.severity.toLowerCase()}">
+        <span class="sev sev-${a.severity.toLowerCase()}">${a.severity}</span>
+        <span>${a.message}</span>
+      </div>`).join('');
+  }
+
+  function renderServices(services) {
+    const el = document.getElementById('services-grid');
+    el.innerHTML = services.map(s => `
+      <div class="svc-row">
+        <div class="svc-name">
+          <div class="svc-dot h-${s.health}"></div>
+          <span>${s.name}</span>
+        </div>
+        <span class="svc-meta">err ${(s.error_rate * 100).toFixed(1)}% · cpu ${s.cpu_pct}%</span>
+      </div>`).join('');
+  }
+
+  function renderOutput(obs, reward) {
+    const el = document.getElementById('log-output');
+    el.style.color = '';
+
+    if (obs.recent_logs && obs.recent_logs.length) {
+      el.innerHTML = obs.recent_logs.slice(-6).map(l => {
+        const cls = `log-${l.level.toLowerCase()}`;
+        return `<div class="${cls}">[${l.level}] ${l.service}: ${l.message}</div>`;
+      }).join('');
+    } else if (obs.last_action_result) {
+      el.innerHTML = `<div class="log-result">${obs.last_action_result}</div>`;
+    }
+  }
+
+  function addActionEntry(step, action, reward, maxSteps) {
+    const log = document.getElementById('action-log');
+    if (log.querySelector('.empty')) log.innerHTML = '';
+
+    const params = action.parameters;
+    const extra = params.fix_id
+      ? ` fix_id=<b style="color:var(--yellow)">${params.fix_id}</b>`
+      : params.window_minutes
+        ? ` window=<b style="color:var(--yellow)">${params.window_minutes}m</b>`
+        : '';
+
+    const rewardVal = typeof reward === 'number' ? reward : 0;
+    const rewardCls = rewardVal > 0 ? 'reward-pos' : rewardVal < 0 ? 'reward-neg' : 'reward-neu';
+    const rewardStr = rewardVal > 0 ? `+${rewardVal.toFixed(2)}` : rewardVal.toFixed(2);
+
+    const entry = document.createElement('div');
+    entry.className = 'action-entry';
+    entry.innerHTML = `
+      <div class="action-entry-top">
+        <span class="step-num">Step ${step} / ${maxSteps}</span>
+        <span class="${rewardCls}">reward ${rewardStr}</span>
+      </div>
+      <div>
+        <span class="action-name">${action.action_type}</span>
+        <span class="action-target">('${action.target_service}'${extra})</span>
+      </div>`;
+    log.appendChild(entry);
+    log.scrollTop = log.scrollHeight;
+
+    document.getElementById('progress-bar').style.width = `${(step / maxSteps) * 100}%`;
+    document.getElementById('step-counter').textContent = `Step ${step}`;
+  }
+
+  function showFinalScore(score, success) {
+    const el = document.getElementById('score-display');
+    el.className = `score-display ${success ? 'score-success' : 'score-fail'}`;
+    el.style.display = 'block';
+    document.getElementById('final-score').textContent = score.toFixed(3);
+    document.getElementById('final-label').textContent = success
+      ? '✓ Incident resolved successfully'
+      : '✗ Incident not fully resolved';
+    document.getElementById('final-label').style.color = success ? 'var(--green)' : 'var(--red)';
+    document.getElementById('progress-bar').style.width = '100%';
+    document.getElementById('progress-bar').style.background = success ? 'var(--green)' : 'var(--red)';
+  }
+
+  // ── Main demo runner ────────────────────────────────────
+  async function runDemo() {
+    if (running) return;
+    running = true;
+
+    const btn = document.getElementById('run-btn');
+    const statusEl = document.getElementById('run-status');
+    btn.disabled = true;
+    btn.textContent = '⏳ Running...';
+    resetDisplay();
+
+    const task = TASKS[selectedTask];
+    let totalReward = 0;
+
+    try {
+      // Reset
+      statusEl.textContent = 'Starting episode...';
+      const resetRes = await fetch('/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task_id: selectedTask })
+      });
+      if (!resetRes.ok) throw new Error(`Reset failed: ${resetRes.status}`);
+      let obs = await resetRes.json();
+
+      renderAlerts(obs.alerts || []);
+      renderServices(obs.services || []);
+      statusEl.textContent = 'Episode started — agent is working...';
+
+      // Steps
+      for (let i = 0; i < task.actions.length; i++) {
+        await new Promise(r => setTimeout(r, 1400));
+
+        const action = task.actions[i];
+        const stepRes = await fetch('/step', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(action)
+        });
+        if (!stepRes.ok) throw new Error(`Step failed: ${stepRes.status}`);
+        const result = await stepRes.json();
+
+        const reward = result.reward?.value ?? 0;
+        totalReward += reward;
+        obs = result.observation || obs;
+
+        addActionEntry(i + 1, action, reward, task.maxSteps);
+        renderAlerts(obs.alerts || []);
+        renderServices(obs.services || []);
+        renderOutput(obs, reward);
+
+        const score = result.info?.score ?? 0;
+        document.getElementById('running-score').textContent = `score ${score.toFixed(3)}`;
+
+        if (result.done) {
+          showFinalScore(score, score >= 0.8);
+          statusEl.textContent = score >= 0.8
+            ? '✓ Incident resolved! Agent succeeded.'
+            : `Episode ended. Final score: ${score.toFixed(3)}`;
+          break;
+        }
+      }
+    } catch (err) {
+      statusEl.textContent = `Error: ${err.message}. The server may be waking up — try again.`;
+    }
+
+    btn.disabled = false;
+    btn.textContent = '▶ Run Again';
+    running = false;
+  }
+
+  checkHealth();
+</script>
+</body>
+</html>

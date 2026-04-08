@@ -26,3 +26,5 @@ api:
   step: POST /step
   state: GET /state
   tasks: GET /tasks
+  grader: POST /grader
+  schema: GET /schema

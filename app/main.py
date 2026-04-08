@@ -9,6 +9,23 @@ from app.models import Action, Observation, Reward
 app = FastAPI(title="SRE Incident Response Environment", version="1.0.0")
 
 
+@app.get("/")
+def root():
+    return {
+        "name": "sre-incident-response",
+        "description": "OpenEnv-compliant SRE incident triage environment",
+        "version": "1.0.0",
+        "endpoints": {
+            "health": "GET /health",
+            "tasks": "GET /tasks",
+            "reset": "POST /reset",
+            "step": "POST /step",
+            "state": "GET /state",
+            "schema": "GET /schema",
+        },
+    }
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}

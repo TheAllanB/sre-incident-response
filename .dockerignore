@@ -1,0 +1,31 @@
+# Secrets — must never be baked into the image
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# Runtime database (generated fresh on container start)
+*.db
+*.sqlite3
+
+# Dev/internal files
+.claude/
+docs/
+tests/
+test_connection.py
+progress.md
+architectural_patterns.md
+openenv_spec.md
+tasks_and_graders.md
+CLAUDE.md
+
+# Git
+.git/
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db

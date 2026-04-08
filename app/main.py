@@ -118,13 +118,24 @@ def tasks():
 
 @app.post("/reset")
 async def reset(request: Request):
+    task_id = None
+
+    # Try JSON body — check multiple possible key names
     try:
         body = await request.json()
+        if isinstance(body, dict):
+            task_id = body.get("task_id") or body.get("task") or body.get("id")
     except Exception:
-        body = {}
-    task_id = body.get("task_id") if isinstance(body, dict) else None
+        pass
+
+    # Try query params as fallback
     if not task_id:
-        raise HTTPException(status_code=400, detail="task_id is required")
+        task_id = request.query_params.get("task_id") or request.query_params.get("task")
+
+    # Default to first task if checker sends empty body (connectivity probe)
+    if not task_id:
+        task_id = "single_service_crash"
+
     try:
         obs = environment.reset(task_id)
         return obs

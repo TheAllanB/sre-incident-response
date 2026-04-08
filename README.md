@@ -2,7 +2,7 @@
 title: SRE Incident Response
 emoji: 🚨
 colorFrom: red
-colorTo: orange
+colorTo: yellow
 sdk: docker
 pinned: false
 tags:

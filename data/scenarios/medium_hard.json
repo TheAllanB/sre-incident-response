@@ -1,0 +1,87 @@
+{
+  "task_id": "db_connection_pool_exhaustion",
+  "max_steps": 15,
+  "services": [
+    {"name": "api-server",       "health": "degraded", "cpu_pct": 31.2, "memory_pct": 44.8, "error_rate": 0.63},
+    {"name": "worker-service",   "health": "healthy",  "cpu_pct": 12.4, "memory_pct": 39.1, "error_rate": 0.00},
+    {"name": "postgres-db",      "health": "degraded", "cpu_pct": 24.3, "memory_pct": 91.2, "error_rate": 0.42},
+    {"name": "cache-service",    "health": "healthy",  "cpu_pct": 14.1, "memory_pct": 58.7, "error_rate": 0.00},
+    {"name": "auth-service",     "health": "healthy",  "cpu_pct":  9.8, "memory_pct": 22.1, "error_rate": 0.00},
+    {"name": "notification-svc", "health": "healthy",  "cpu_pct":  6.3, "memory_pct": 18.4, "error_rate": 0.00}
+  ],
+  "alerts": [
+    {"id": "alert-008", "service": "api-server",    "severity": "P1", "message": "api-server: 63% request failure rate — database layer returning 503 Service Unavailable", "firing": true},
+    {"id": "alert-009", "service": "postgres-db",   "severity": "P1", "message": "postgres-db: connection pool at capacity (500/500) — new connections refused", "firing": true},
+    {"id": "alert-010", "service": "cache-service", "severity": "P3", "message": "cache-service: memory utilization at 58% — above weekly median but within operational limits", "firing": true}
+  ],
+  "logs": {
+    "api-server": [
+      {"timestamp": "2026-04-08T05:00:01Z", "service": "api-server", "level": "INFO",  "message": "GET /api/v1/orders 200 — 124ms"},
+      {"timestamp": "2026-04-08T05:00:09Z", "service": "api-server", "level": "INFO",  "message": "GET /api/v1/products 200 — 89ms"},
+      {"timestamp": "2026-04-08T05:00:22Z", "service": "api-server", "level": "INFO",  "message": "POST /api/v1/orders 201 — 141ms"},
+      {"timestamp": "2026-04-08T05:08:00Z", "service": "api-server", "level": "WARN",  "message": "Database response latency elevated: avg 450ms (baseline: 80ms) — watching"},
+      {"timestamp": "2026-04-08T05:12:00Z", "service": "api-server", "level": "WARN",  "message": "Connection pool wait time >1s for 34% of requests — postgres-db under pressure"},
+      {"timestamp": "2026-04-08T05:15:00Z", "service": "api-server", "level": "ERROR", "message": "pq: sorry, too many clients already — postgres-db refused connection (attempt 1/3)"},
+      {"timestamp": "2026-04-08T05:15:00Z", "service": "api-server", "level": "ERROR", "message": "pq: sorry, too many clients already — postgres-db refused connection (attempt 2/3)"},
+      {"timestamp": "2026-04-08T05:15:01Z", "service": "api-server", "level": "ERROR", "message": "pq: sorry, too many clients already — postgres-db refused connection (attempt 3/3) — giving up"},
+      {"timestamp": "2026-04-08T05:15:01Z", "service": "api-server", "level": "ERROR", "message": "Returning HTTP 503 to client — upstream postgres-db connection pool exhausted"},
+      {"timestamp": "2026-04-08T05:18:00Z", "service": "api-server", "level": "INFO",  "message": "Health check /health → 200 OK — application process alive (database-independent probe)"}
+    ],
+    "worker-service": [
+      {"timestamp": "2026-04-08T03:14:00Z", "service": "worker-service", "level": "INFO",  "message": "Deploy v2.1.1 complete — batch job processor updated (job concurrency refactor)"},
+      {"timestamp": "2026-04-08T03:14:05Z", "service": "worker-service", "level": "INFO",  "message": "Startup health check PASSED — all subsystems nominal"},
+      {"timestamp": "2026-04-08T03:15:00Z", "service": "worker-service", "level": "INFO",  "message": "Processing job batch #7841 (142 items) — DB connection acquired (pool: 18/500)"},
+      {"timestamp": "2026-04-08T03:30:00Z", "service": "worker-service", "level": "INFO",  "message": "Processing job batch #7842 (138 items) — DB connection acquired (pool: 34/500)"},
+      {"timestamp": "2026-04-08T04:00:00Z", "service": "worker-service", "level": "INFO",  "message": "Processing job batch #7843 (151 items) — DB connection acquired (pool: 89/500)"},
+      {"timestamp": "2026-04-08T04:30:00Z", "service": "worker-service", "level": "INFO",  "message": "Processing job batch #7844 (149 items) — DB connection acquired (pool: 212/500)"},
+      {"timestamp": "2026-04-08T05:00:00Z", "service": "worker-service", "level": "INFO",  "message": "Processing job batch #7845 (144 items) — DB connection acquired (pool: 431/500)"},
+      {"timestamp": "2026-04-08T05:10:00Z", "service": "worker-service", "level": "WARN",  "message": "Processing job batch #7846 (147 items) — DB connection acquired (pool: 489/500) — pool near capacity"},
+      {"timestamp": "2026-04-08T05:14:00Z", "service": "worker-service", "level": "ERROR", "message": "Processing job batch #7847 — could not acquire DB connection: pool exhausted (500/500)"}
+    ],
+    "postgres-db": [
+      {"timestamp": "2026-04-08T05:10:00Z", "service": "postgres-db", "level": "WARN",  "message": "Connection count: 431/500 — approaching configured max_connections limit"},
+      {"timestamp": "2026-04-08T05:13:00Z", "service": "postgres-db", "level": "WARN",  "message": "Connection count: 489/500 — critical threshold exceeded"},
+      {"timestamp": "2026-04-08T05:14:00Z", "service": "postgres-db", "level": "ERROR", "message": "FATAL: remaining connection slots reserved for non-replication superusers (500/500 used)"},
+      {"timestamp": "2026-04-08T05:14:01Z", "service": "postgres-db", "level": "ERROR", "message": "Long-lived idle connection from worker-service@10.0.1.23 held 91 minutes — no active transaction (suspected leak)"},
+      {"timestamp": "2026-04-08T05:14:02Z", "service": "postgres-db", "level": "ERROR", "message": "Long-lived idle connection from worker-service@10.0.1.23 held 91 minutes — no active transaction (suspected leak)"},
+      {"timestamp": "2026-04-08T05:14:03Z", "service": "postgres-db", "level": "ERROR", "message": "Connection refused for api-server@10.0.1.10 — pool exhausted (500/500)"},
+      {"timestamp": "2026-04-08T05:14:04Z", "service": "postgres-db", "level": "ERROR", "message": "Connection refused for api-server@10.0.1.10 — pool exhausted (500/500)"}
+    ],
+    "cache-service": [
+      {"timestamp": "2026-04-08T04:00:00Z", "service": "cache-service", "level": "INFO", "message": "Cache hit rate: 87.3% — within normal operating range"},
+      {"timestamp": "2026-04-08T04:30:00Z", "service": "cache-service", "level": "INFO", "message": "Eviction rate: 2.1/sec — normal"},
+      {"timestamp": "2026-04-08T05:00:00Z", "service": "cache-service", "level": "INFO", "message": "Memory: 58.7% — elevated due to recent object storage growth, not a concern"},
+      {"timestamp": "2026-04-08T05:10:00Z", "service": "cache-service", "level": "WARN", "message": "Memory at 58.7% — monitoring, no eviction pressure observed"}
+    ],
+    "auth-service": [
+      {"timestamp": "2026-04-08T05:00:00Z", "service": "auth-service", "level": "INFO", "message": "Token validation: 1840 req/min — all nominal"},
+      {"timestamp": "2026-04-08T05:15:00Z", "service": "auth-service", "level": "WARN", "message": "Downstream 503 errors detected from api-server — may affect auth-dependent flows"},
+      {"timestamp": "2026-04-08T05:18:00Z", "service": "auth-service", "level": "INFO", "message": "Auth service itself healthy — no internal errors"}
+    ],
+    "notification-svc": [
+      {"timestamp": "2026-04-08T05:00:00Z", "service": "notification-svc", "level": "INFO", "message": "Email delivery queue: 12 pending — normal"},
+      {"timestamp": "2026-04-08T05:15:00Z", "service": "notification-svc", "level": "INFO", "message": "Email delivery queue: 14 pending — slightly elevated but within SLO"}
+    ]
+  },
+  "extended_metrics": {
+    "postgres-db": "Connection pool history (last 120m): 03:14=18, 03:30=34, 04:00=89, 04:30=212, 05:00=431, 05:10=489, 05:14=500 [SATURATED]. Linear growth — consistent with a connection leak pattern (connections acquired but never released). worker-service v2.1.1 deployed at 03:14 — pool growth began immediately after. Note: restarting postgres-db will not resolve this — leaked connections will re-accumulate within minutes. The fix must target the connection leak source: fix_id=drain_connection_pool (target: worker-service).",
+    "worker-service": "CPU/memory stable across 120m window — service appears healthy by standard metrics. No error rate. Job batches completing normally by job-count metrics. Pool acquisition events visible in application logs (review logs for pool_count trend)."
+  },
+  "slo_status": [
+    {
+      "service": "api-server",
+      "slo_target_pct": 99.9,
+      "current_availability_pct": 37.0,
+      "error_budget_remaining_pct": 8.3,
+      "breach_estimated_minutes": 22
+    }
+  ],
+  "ground_truth": {
+    "root_cause_service": "worker-service",
+    "correct_action": "apply_fix",
+    "correct_fix_id": "drain_connection_pool",
+    "correct_order": [],
+    "post_fix_services": ["postgres-db", "api-server"],
+    "red_herrings": ["cache-service"]
+  }
+}

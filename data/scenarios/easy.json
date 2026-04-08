@@ -1,0 +1,58 @@
+{
+  "task_id": "single_service_crash",
+  "max_steps": 10,
+  "services": [
+    {"name": "payment-api",   "health": "down",    "cpu_pct":  0.0, "memory_pct": 100.0, "error_rate": 1.00},
+    {"name": "cache-service", "health": "healthy", "cpu_pct": 12.3, "memory_pct":  34.1, "error_rate": 0.00},
+    {"name": "auth-service",  "health": "healthy", "cpu_pct":  8.5, "memory_pct":  22.7, "error_rate": 0.00}
+  ],
+  "alerts": [
+    {"id": "alert-001", "service": "payment-api", "severity": "P1", "message": "payment-api: health check failing for 5 minutes — no response on port 8080", "firing": true}
+  ],
+  "logs": {
+    "payment-api": [
+      {"timestamp": "2026-04-06T03:08:00Z", "service": "payment-api", "level": "INFO",  "message": "POST /api/v1/charge 200 — 112ms"},
+      {"timestamp": "2026-04-06T03:08:30Z", "service": "payment-api", "level": "INFO",  "message": "GET  /api/v1/status 200 — 45ms"},
+      {"timestamp": "2026-04-06T03:09:00Z", "service": "payment-api", "level": "INFO",  "message": "Processed 248 transactions in last 60s — all nominal"},
+      {"timestamp": "2026-04-06T03:09:45Z", "service": "payment-api", "level": "INFO",  "message": "Starting payment-api v2.4.1"},
+      {"timestamp": "2026-04-06T03:10:01Z", "service": "payment-api", "level": "INFO",  "message": "Starting payment-api v2.4.1"},
+      {"timestamp": "2026-04-06T03:10:20Z", "service": "payment-api", "level": "WARN",  "message": "Memory usage at 72% — within limits but trending upward"},
+      {"timestamp": "2026-04-06T03:10:45Z", "service": "payment-api", "level": "WARN",  "message": "Memory usage at 78% — approaching container limit (512Mi)"},
+      {"timestamp": "2026-04-06T03:11:00Z", "service": "payment-api", "level": "WARN",  "message": "GC pressure increasing — pause times >50ms"},
+      {"timestamp": "2026-04-06T03:11:12Z", "service": "payment-api", "level": "ERROR", "message": "Memory usage at 95% — GC pressure critical, response latency degrading"},
+      {"timestamp": "2026-04-06T03:11:33Z", "service": "payment-api", "level": "FATAL", "message": "OOMKilled: container exceeded memory limit (512Mi). Process terminated."},
+      {"timestamp": "2026-04-06T03:11:34Z", "service": "payment-api", "level": "ERROR", "message": "Container exited with code 137 (SIGKILL)"}
+    ],
+    "cache-service": [
+      {"timestamp": "2026-04-06T03:00:00Z", "service": "cache-service", "level": "INFO", "message": "Cache hit rate: 94.8% — optimal"},
+      {"timestamp": "2026-04-06T03:05:00Z", "service": "cache-service", "level": "INFO", "message": "Cache hit rate: 94.2% — operating normally"},
+      {"timestamp": "2026-04-06T03:08:00Z", "service": "cache-service", "level": "INFO", "message": "Eviction rate: 0.3/sec — normal for current load"},
+      {"timestamp": "2026-04-06T03:10:00Z", "service": "cache-service", "level": "INFO", "message": "Cache hit rate: 93.8% — no issues detected"},
+      {"timestamp": "2026-04-06T03:11:00Z", "service": "cache-service", "level": "INFO", "message": "Memory: 34.1% — well within limits"}
+    ],
+    "auth-service": [
+      {"timestamp": "2026-04-06T03:08:00Z", "service": "auth-service", "level": "INFO", "message": "Processed 1180 auth requests in last 60s — all nominal"},
+      {"timestamp": "2026-04-06T03:09:00Z", "service": "auth-service", "level": "INFO", "message": "Token validation rate: 1200/min — steady"},
+      {"timestamp": "2026-04-06T03:10:00Z", "service": "auth-service", "level": "INFO", "message": "Processed 1240 auth requests in last 60s — all nominal"},
+      {"timestamp": "2026-04-06T03:11:00Z", "service": "auth-service", "level": "INFO", "message": "JWT expiry cache hit rate: 99.1%"}
+    ]
+  },
+  "extended_metrics": {},
+  "slo_status": [
+    {
+      "service": "payment-api",
+      "slo_target_pct": 99.95,
+      "current_availability_pct": 0.0,
+      "error_budget_remaining_pct": 31.2,
+      "breach_estimated_minutes": 94
+    }
+  ],
+  "ground_truth": {
+    "root_cause_service": "payment-api",
+    "correct_action": "restart_service",
+    "correct_fix_id": null,
+    "correct_order": [],
+    "post_fix_services": [],
+    "red_herrings": []
+  }
+}

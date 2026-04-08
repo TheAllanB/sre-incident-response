@@ -1,0 +1,77 @@
+{
+  "task_id": "silent_data_corruption",
+  "max_steps": 20,
+  "services": [
+    {"name": "reporting-service", "health": "healthy",  "cpu_pct": 18.2, "memory_pct": 41.5, "error_rate": 0.00},
+    {"name": "analytics-service", "health": "degraded", "cpu_pct": 22.1, "memory_pct": 48.3, "error_rate": 0.03},
+    {"name": "cache-service",     "health": "degraded", "cpu_pct": 38.7, "memory_pct": 55.0, "error_rate": 0.01},
+    {"name": "database",          "health": "healthy",  "cpu_pct": 19.4, "memory_pct": 52.1, "error_rate": 0.00},
+    {"name": "api-gateway",       "health": "healthy",  "cpu_pct": 11.0, "memory_pct": 28.4, "error_rate": 0.00}
+  ],
+  "alerts": [
+    {"id": "alert-006", "service": "analytics-service", "severity": "P2", "message": "analytics-service: data validation errors spiking — 142 failures in last 10m, downstream dashboards corrupted", "firing": true},
+    {"id": "alert-007", "service": "cache-service",     "severity": "P3", "message": "cache-service: p99 latency 382ms (threshold: 200ms) — elevated but self-resolving", "firing": true}
+  ],
+  "logs": {
+    "analytics-service": [
+      {"timestamp": "2026-04-06T01:55:00Z", "service": "analytics-service", "level": "INFO",  "message": "Ingesting hourly batch from reporting-service: 2400 records"},
+      {"timestamp": "2026-04-06T01:55:01Z", "service": "analytics-service", "level": "INFO",  "message": "Schema validation: PASSED — record structure nominal"},
+      {"timestamp": "2026-04-06T01:55:30Z", "service": "analytics-service", "level": "INFO",  "message": "Batch #8821 committed to analytics store: 2400 records"},
+      {"timestamp": "2026-04-06T02:00:12Z", "service": "analytics-service", "level": "INFO",  "message": "Ingesting batch from reporting-service: 2400 records"},
+      {"timestamp": "2026-04-06T02:00:13Z", "service": "analytics-service", "level": "ERROR", "message": "Validation failed: revenue field is null in 847/2400 records (source: reporting-service)"},
+      {"timestamp": "2026-04-06T02:00:13Z", "service": "analytics-service", "level": "ERROR", "message": "Validation failed: transaction_id format invalid — expected UUID v4, got empty string (634 records)"},
+      {"timestamp": "2026-04-06T02:00:14Z", "service": "analytics-service", "level": "ERROR", "message": "Upstream data quality check: reporting-service response headers contain 'X-Serializer: legacy_v1' — deprecated serialization format active"},
+      {"timestamp": "2026-04-06T02:00:14Z", "service": "analytics-service", "level": "ERROR", "message": "Legacy serializer strips revenue aggregation and truncates UUID fields — this is a known issue with the old format. Upstream config flag controlling this: 'enable_revenue_aggregation'"},
+      {"timestamp": "2026-04-06T02:05:00Z", "service": "analytics-service", "level": "ERROR", "message": "Downstream pipeline halted — corrupt data from reporting-service stream detected"},
+      {"timestamp": "2026-04-06T02:10:00Z", "service": "analytics-service", "level": "WARN",  "message": "Skipped 1481 records with validation errors in last 10m — source: reporting-service"}
+    ],
+    "reporting-service": [
+      {"timestamp": "2026-04-06T00:00:00Z", "service": "reporting-service", "level": "INFO",  "message": "Report generation cycle complete: 2400 records — OK"},
+      {"timestamp": "2026-04-06T00:01:00Z", "service": "reporting-service", "level": "INFO",  "message": "Deploy v2.1.1 initiated — config management update"},
+      {"timestamp": "2026-04-06T00:01:01Z", "service": "reporting-service", "level": "INFO",  "message": "Config applied: enable_revenue_aggregation=false (was: true)"},
+      {"timestamp": "2026-04-06T00:01:02Z", "service": "reporting-service", "level": "INFO",  "message": "Config applied: serializer_version=legacy_v1 (was: v3)"},
+      {"timestamp": "2026-04-06T00:01:03Z", "service": "reporting-service", "level": "INFO",  "message": "Deploy v2.1.1 complete — startup health check: PASSED (health endpoint does not validate output record schema)"},
+      {"timestamp": "2026-04-06T01:00:00Z", "service": "reporting-service", "level": "INFO",  "message": "Report generation cycle complete: 2400 records written to output stream"},
+      {"timestamp": "2026-04-06T01:00:01Z", "service": "reporting-service", "level": "INFO",  "message": "All health checks passing — CPU 18%, memory 41%, error_rate 0.0%"},
+      {"timestamp": "2026-04-06T02:00:00Z", "service": "reporting-service", "level": "INFO",  "message": "Report generation cycle complete: 2400 records written to output stream"},
+      {"timestamp": "2026-04-06T02:00:01Z", "service": "reporting-service", "level": "INFO",  "message": "All health checks passing — CPU 18%, memory 41%, error_rate 0.0%"}
+    ],
+    "cache-service": [
+      {"timestamp": "2026-04-06T01:30:00Z", "service": "cache-service", "level": "INFO", "message": "Scheduled node restart complete — cache warming in progress"},
+      {"timestamp": "2026-04-06T01:45:00Z", "service": "cache-service", "level": "WARN", "message": "p99 latency: 382ms — above 200ms threshold, expected post-restart warm-up behavior"},
+      {"timestamp": "2026-04-06T02:00:00Z", "service": "cache-service", "level": "WARN", "message": "p99 latency: 382ms — still elevated but trending down"},
+      {"timestamp": "2026-04-06T02:05:00Z", "service": "cache-service", "level": "INFO", "message": "Eviction rate normal for this time of day — no operational concern"},
+      {"timestamp": "2026-04-06T02:10:00Z", "service": "cache-service", "level": "INFO", "message": "Cache warming 84% complete — latency will self-resolve within 20 minutes"}
+    ],
+    "database": [
+      {"timestamp": "2026-04-06T02:00:00Z", "service": "database", "level": "INFO", "message": "All queries nominal — p99 latency 8ms"},
+      {"timestamp": "2026-04-06T02:05:00Z", "service": "database", "level": "INFO", "message": "Write throughput: 1200 rows/sec — steady"},
+      {"timestamp": "2026-04-06T02:10:00Z", "service": "database", "level": "INFO", "message": "No slow queries, no lock contention — fully healthy"}
+    ],
+    "api-gateway": [
+      {"timestamp": "2026-04-06T02:00:00Z", "service": "api-gateway", "level": "INFO", "message": "Throughput: 4200 req/min — within normal range"},
+      {"timestamp": "2026-04-06T02:05:00Z", "service": "api-gateway", "level": "INFO", "message": "All upstream services reachable — no connection errors"}
+    ]
+  },
+  "extended_metrics": {
+    "reporting-service": "Extended window analysis (last 120m):\n- 00:00 UTC: Output record completeness 100% — all fields populated correctly\n- 00:01 UTC: Deploy v2.1.1 applied two config changes: enable_revenue_aggregation=false, serializer_version=legacy_v1\n- 00:05 UTC: Output record completeness dropped to 64.8% — revenue aggregation fields absent\n- 01:00 UTC: Output record completeness 63.1% — revenue AND transaction_id fields null/empty\n- 02:00 UTC: Output record completeness 64.2% — consistent pattern since config change\nConclusion: config changes in v2.1.1 are corrupting output. Health metrics (CPU, memory, error_rate) remain green because the service is operationally healthy but producing logically invalid output. The correct remediation is to revert the problematic configuration (fix_id: revert_config_flag).",
+    "cache-service": "p99 latency history: 01:30=380ms (post-restart), 01:45=382ms, 02:00=382ms, 02:10=340ms. Cause: scheduled node restart at 01:30 — cache warming in progress. Expected to self-resolve by 02:30 UTC. Not related to analytics-service data corruption."
+  },
+  "slo_status": [
+    {
+      "service": "analytics-service",
+      "slo_target_pct": 99.9,
+      "current_availability_pct": 97.0,
+      "error_budget_remaining_pct": 22.1,
+      "breach_estimated_minutes": null
+    }
+  ],
+  "ground_truth": {
+    "root_cause_service": "reporting-service",
+    "correct_action": "apply_fix",
+    "correct_fix_id": "revert_config_flag",
+    "correct_order": [],
+    "post_fix_services": ["analytics-service"],
+    "red_herrings": ["cache-service"]
+  }
+}

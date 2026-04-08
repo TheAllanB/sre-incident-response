@@ -1,0 +1,77 @@
+{
+  "task_id": "tls_certificate_expiry",
+  "max_steps": 20,
+  "services": [
+    {"name": "api-gateway",  "health": "healthy",  "cpu_pct": 17.3, "memory_pct": 29.8, "error_rate": 0.00},
+    {"name": "frontend",     "health": "degraded", "cpu_pct": 22.4, "memory_pct": 35.2, "error_rate": 0.91},
+    {"name": "backend-api",  "health": "healthy",  "cpu_pct": 28.9, "memory_pct": 41.3, "error_rate": 0.00},
+    {"name": "auth-service", "health": "healthy",  "cpu_pct":  8.4, "memory_pct": 20.1, "error_rate": 0.00},
+    {"name": "cdn-service",  "health": "healthy",  "cpu_pct":  4.1, "memory_pct":  9.8, "error_rate": 0.00}
+  ],
+  "alerts": [
+    {"id": "alert-011", "service": "frontend",    "severity": "P1", "message": "frontend: 91% of user-facing requests failing — SSL/TLS connectivity error to upstream", "firing": true},
+    {"id": "alert-012", "service": "api-gateway", "severity": "P2", "message": "api-gateway: TLS handshake failures on external listener :443 — possible certificate expiry", "firing": true},
+    {"id": "alert-013", "service": "backend-api", "severity": "P3", "message": "backend-api: p99 response time 410ms — above 200ms SLO threshold (retry storm in progress)", "firing": true}
+  ],
+  "logs": {
+    "api-gateway": [
+      {"timestamp": "2026-04-08T00:50:00Z", "service": "api-gateway", "level": "INFO",  "message": "TLS certificate status — CN=api.prod.example.com, issuer=LetsEncrypt, expires in 600 seconds"},
+      {"timestamp": "2026-04-08T00:55:00Z", "service": "api-gateway", "level": "INFO",  "message": "Handling 4800 req/min — all internal routes responding normally"},
+      {"timestamp": "2026-04-08T01:00:01Z", "service": "api-gateway", "level": "ERROR", "message": "TLS handshake failed: x509: certificate has expired (CN=api.prod.example.com, NotAfter=2026-04-08T01:00:00Z)"},
+      {"timestamp": "2026-04-08T01:00:01Z", "service": "api-gateway", "level": "ERROR", "message": "TLS handshake failed: x509: certificate has expired (CN=api.prod.example.com, NotAfter=2026-04-08T01:00:00Z)"},
+      {"timestamp": "2026-04-08T01:00:02Z", "service": "api-gateway", "level": "ERROR", "message": "SSL_ERROR_RX_RECORD_TOO_LONG: client aborted TLS handshake — remote 203.0.113.42:52341"},
+      {"timestamp": "2026-04-08T01:05:00Z", "service": "api-gateway", "level": "INFO",  "message": "Internal probe: GET /internal/health HTTP/1.1 200 OK — health endpoint alive (plain HTTP, not HTTPS)"},
+      {"timestamp": "2026-04-08T01:05:01Z", "service": "api-gateway", "level": "INFO",  "message": "Internal synthetic monitor: /api/v1/ping 200 OK — internal connectivity nominal"},
+      {"timestamp": "2026-04-08T03:30:00Z", "service": "api-gateway", "level": "INFO",  "message": "Internal probe: GET /internal/health HTTP/1.1 200 OK — health endpoint alive"},
+      {"timestamp": "2026-04-08T03:30:01Z", "service": "api-gateway", "level": "ERROR", "message": "TLS handshake failed: x509: certificate has expired (CN=api.prod.example.com, NotAfter=2026-04-08T01:00:00Z)"},
+      {"timestamp": "2026-04-08T03:30:02Z", "service": "api-gateway", "level": "ERROR", "message": "TLS handshake failed: x509: certificate has expired (CN=api.prod.example.com, NotAfter=2026-04-08T01:00:00Z)"}
+    ],
+    "frontend": [
+      {"timestamp": "2026-04-08T00:55:00Z", "service": "frontend", "level": "INFO",  "message": "User session requests: 4200/min — normal pre-incident baseline"},
+      {"timestamp": "2026-04-08T01:00:05Z", "service": "frontend", "level": "ERROR", "message": "Failed connecting to api-gateway:443 — SSL: CERTIFICATE_VERIFY_FAILED (attempt 1/3)"},
+      {"timestamp": "2026-04-08T01:00:06Z", "service": "frontend", "level": "ERROR", "message": "Failed connecting to api-gateway:443 — SSL: CERTIFICATE_VERIFY_FAILED (attempt 2/3)"},
+      {"timestamp": "2026-04-08T01:00:07Z", "service": "frontend", "level": "ERROR", "message": "Failed connecting to api-gateway:443 — SSL: CERTIFICATE_VERIFY_FAILED (attempt 3/3) — giving up"},
+      {"timestamp": "2026-04-08T01:00:08Z", "service": "frontend", "level": "ERROR", "message": "Returning HTTP 503 to user — upstream api-gateway unreachable over HTTPS"},
+      {"timestamp": "2026-04-08T01:30:00Z", "service": "frontend", "level": "WARN",  "message": "Retry storm active — 8400 failed requests/min generating load against api-gateway:443"},
+      {"timestamp": "2026-04-08T03:30:00Z", "service": "frontend", "level": "ERROR", "message": "Still failing — 91% error rate unchanged since 01:00 UTC — no recovery observed"}
+    ],
+    "backend-api": [
+      {"timestamp": "2026-04-08T03:27:00Z", "service": "backend-api", "level": "INFO",  "message": "Health check passed before deploy — all DB connections healthy, p99=88ms"},
+      {"timestamp": "2026-04-08T03:28:00Z", "service": "backend-api", "level": "INFO",  "message": "Deploy v2.3.1 initiated — minor feature update (adds /v2/orders endpoint)"},
+      {"timestamp": "2026-04-08T03:29:30Z", "service": "backend-api", "level": "INFO",  "message": "Deploy v2.3.1 complete — zero migration errors, startup health check PASSED"},
+      {"timestamp": "2026-04-08T03:29:31Z", "service": "backend-api", "level": "INFO",  "message": "Deploy v2.3.1 running — all internal routes healthy"},
+      {"timestamp": "2026-04-08T03:30:00Z", "service": "backend-api", "level": "WARN",  "message": "p99 latency: 410ms — elevated, probable cause: retry storm from frontend (not a backend error)"},
+      {"timestamp": "2026-04-08T03:30:05Z", "service": "backend-api", "level": "INFO",  "message": "All database connections healthy — no backend-side errors detected"}
+    ],
+    "auth-service": [
+      {"timestamp": "2026-04-08T01:00:00Z", "service": "auth-service", "level": "INFO", "message": "Token validation: 0 req/min — no user traffic reaching auth layer (expected if gateway is down)"},
+      {"timestamp": "2026-04-08T03:30:00Z", "service": "auth-service", "level": "INFO", "message": "Token validation: 0 req/min — confirming no user traffic is reaching the backend through the gateway"},
+      {"timestamp": "2026-04-08T03:30:01Z", "service": "auth-service", "level": "INFO", "message": "Internal service-to-service calls healthy — only external user traffic affected"}
+    ],
+    "cdn-service": [
+      {"timestamp": "2026-04-08T01:00:00Z", "service": "cdn-service", "level": "INFO", "message": "Serving static assets normally — CDN TLS certificate is separate and valid (expires 2027-01-14)"},
+      {"timestamp": "2026-04-08T03:30:00Z", "service": "cdn-service", "level": "INFO", "message": "Cache hit rate: 99.1% — no CDN-side errors, origin pull uses separate cert chain"}
+    ]
+  },
+  "extended_metrics": {
+    "api-gateway": "External HTTPS error rate (5-min windows): 00:55=0.0%, 01:00=100.0%, 01:05=100.0%, 01:30=100.0%, 02:00=100.0%, 03:00=100.0%, 03:30=100.0%. Step-change to 100% at 01:00 UTC — matches certificate NotAfter timestamp. Internal HTTP health checks (non-TLS): 200 OK throughout entire window — explains why service shows 'healthy' in monitoring. backend-api v2.3.1 deployed at 03:28 UTC — 2h28m AFTER TLS errors began, cannot be root cause. Certificate rotation required to restore external HTTPS: fix_id=rotate_certificate (apply to: api-gateway).",
+    "backend-api": "p99 latency history: pre-incident=88ms, 01:00=92ms, 03:28=89ms, 03:30=410ms. Latency spike at 03:30 is 2.5h after the user-facing incident began — caused by retry storm from frontend clients, not by the v2.3.1 deploy. Backend-api error rate remains 0% throughout — all errors are upstream at the TLS layer."
+  },
+  "slo_status": [
+    {
+      "service": "frontend",
+      "slo_target_pct": 99.5,
+      "current_availability_pct": 9.0,
+      "error_budget_remaining_pct": 0.1,
+      "breach_estimated_minutes": 3
+    }
+  ],
+  "ground_truth": {
+    "root_cause_service": "api-gateway",
+    "correct_action": "apply_fix",
+    "correct_fix_id": "rotate_certificate",
+    "correct_order": [],
+    "post_fix_services": ["frontend"],
+    "red_herrings": ["backend-api", "cdn-service"]
+  }
+}

@@ -1,0 +1,28 @@
+name: sre-incident-response
+version: "1.0.0"
+description: >
+  An SRE on-call simulation where an agent triages production alerts,
+  investigates logs and metrics, and applies remediation actions.
+tags: [sre, incident-response, observability, devops, openenv]
+tasks:
+  - id: single_service_crash
+    difficulty: easy
+    description: A single service is down with clear error logs. Identify and restart it.
+  - id: cascading_failure
+    difficulty: medium
+    description: Two services are failing due to a dependency issue. Find root cause and fix in order.
+  - id: silent_data_corruption
+    difficulty: hard
+    description: A service appears healthy but produces corrupted output. Misleading metrics included.
+  - id: db_connection_pool_exhaustion
+    difficulty: medium-hard
+    description: Database connection pool exhausted by a leaking worker service. The culprit appears healthy by standard metrics.
+  - id: tls_certificate_expiry
+    difficulty: hard
+    description: TLS certificate expired causing 91% user-facing failure. The gateway reports healthy internally. A recent deploy is a red herring.
+api:
+  health: GET /health
+  reset: POST /reset
+  step: POST /step
+  state: GET /state
+  tasks: GET /tasks

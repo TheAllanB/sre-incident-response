@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "sre-incident-response"
+version = "1.0.0"
+description = "OpenEnv-compliant SRE incident triage environment for AI agent benchmarking"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi==0.115.0",
+    "uvicorn[standard]==0.30.0",
+    "pydantic==2.7.0",
+    "pyyaml==6.0.1",
+    "python-dotenv==1.0.1",
+    "openai==1.35.0",
+    "requests==2.32.3",
+    "httpx==0.27.0",
+]
+
+[project.urls]
+"Homepage" = "https://huggingface.co/spaces/TheAllanB/sre-incident-response"

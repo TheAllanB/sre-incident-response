@@ -117,8 +117,12 @@ def tasks():
 
 
 @app.post("/reset")
-def reset(body: dict):
-    task_id = body.get("task_id")
+async def reset(request: Request):
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    task_id = body.get("task_id") if isinstance(body, dict) else None
     if not task_id:
         raise HTTPException(status_code=400, detail="task_id is required")
     try:

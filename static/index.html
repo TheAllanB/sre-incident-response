@@ -8,450 +8,465 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #070d1a;
-      --surface:  #0f1829;
-      --card:     #162032;
-      --border:   #1e2d44;
-      --blue:     #3b82f6;
-      --green:    #10b981;
-      --yellow:   #f59e0b;
-      --orange:   #f97316;
-      --red:      #ef4444;
-      --text:     #e2e8f0;
-      --muted:    #64748b;
-      --font:     'Courier New', monospace;
+      --bg:      #0f1117;
+      --surface: #161b27;
+      --card:    #1c2333;
+      --border:  #2a3347;
+      --accent:  #4f8ef7;
+      --green:   #3fb950;
+      --yellow:  #d29922;
+      --red:     #f85149;
+      --text:    #e6edf3;
+      --sub:     #8b949e;
+      --dim:     #30363d;
     }
 
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: var(--font);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
       min-height: 100vh;
     }
 
-    /* ── HEADER ─────────────────────────────────────── */
+    /* ── HEADER ───────────────────────────── */
     header {
-      text-align: center;
-      padding: 48px 24px 36px;
-      background: linear-gradient(180deg, #0a1628 0%, var(--bg) 100%);
+      padding: 40px 24px 32px;
       border-bottom: 1px solid var(--border);
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .header-top {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 6px;
     }
     header h1 {
-      font-size: 2.4rem;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      margin-bottom: 10px;
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: var(--text);
     }
-    header h1 span { color: var(--blue); }
+    header h1 span { color: var(--accent); font-weight: 400; }
     header p {
-      color: var(--muted);
-      font-size: 0.95rem;
+      color: var(--sub);
+      font-size: 0.875rem;
       margin-bottom: 20px;
     }
-    .badges {
+    .meta-row {
       display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 18px;
-    }
-    .badge {
-      padding: 4px 12px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      border: 1px solid;
-    }
-    .badge-blue   { color: var(--blue);   border-color: var(--blue);   background: #1e3a5f33; }
-    .badge-green  { color: var(--green);  border-color: var(--green);  background: #06402633; }
-    .badge-orange { color: var(--orange); border-color: var(--orange); background: #43200533; }
-    .badge-yellow { color: var(--yellow); border-color: var(--yellow); background: #45300033; }
-
-    #status-badge {
-      display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 5px 14px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      background: #0a2a1a;
-      border: 1px solid var(--green);
-      color: var(--green);
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 0.78rem;
+      color: var(--sub);
     }
-    .dot {
-      width: 8px; height: 8px;
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .meta-dot {
+      width: 6px; height: 6px;
       border-radius: 50%;
       background: var(--green);
-      animation: pulse 2s infinite;
     }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0.4; }
+    .tag {
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.72rem;
+      color: var(--sub);
+    }
+    .score-tag {
+      padding: 2px 10px;
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      font-size: 0.72rem;
+      color: var(--accent);
     }
 
-    /* ── TASK SELECTOR ───────────────────────────────── */
-    .task-section {
-      max-width: 1100px;
-      margin: 32px auto 0;
-      padding: 0 24px;
-    }
-    .section-label {
+    /* ── LAYOUT ───────────────────────────── */
+    .page { max-width: 1100px; margin: 0 auto; padding: 24px; }
+
+    .section-title {
       font-size: 0.7rem;
-      letter-spacing: 2px;
+      font-weight: 600;
+      letter-spacing: 1px;
       text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 14px;
+      color: var(--sub);
+      margin-bottom: 12px;
     }
-    .task-cards {
+
+    /* ── TASK CARDS ───────────────────────── */
+    .task-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
+      gap: 10px;
+      margin-bottom: 20px;
     }
     .task-card {
-      background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 16px;
+      border-radius: 6px;
+      padding: 14px;
       cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
+      transition: border-color 0.15s;
+      background: var(--surface);
     }
-    .task-card:hover  { border-color: var(--blue); background: #162a40; }
-    .task-card.active { border-color: var(--blue); background: #162a40; box-shadow: 0 0 0 1px var(--blue); }
+    .task-card:hover  { border-color: var(--accent); }
+    .task-card.active { border-color: var(--accent); background: var(--card); }
 
-    .task-card-top {
+    .task-card-header {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      margin-bottom: 8px;
+      align-items: center;
+      margin-bottom: 6px;
     }
-    .task-card h3 { font-size: 0.9rem; font-weight: 600; }
+    .task-card h3 { font-size: 0.85rem; font-weight: 600; }
+    .task-card p  { font-size: 0.78rem; color: var(--sub); line-height: 1.45; }
+
     .diff {
       font-size: 0.65rem;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 999px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 3px;
       text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    .diff-easy   { background: #064e3b; color: var(--green); }
-    .diff-medium { background: #451a03; color: var(--yellow); }
-    .diff-hard   { background: #450a0a; color: var(--red); }
-    .task-card p { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+    .diff-easy   { color: var(--green);  background: #1a3a22; }
+    .diff-medium { color: var(--yellow); background: #2d2200; }
+    .diff-hard   { color: var(--red);    background: #2d1419; }
 
-    /* ── RUN BUTTON ──────────────────────────────────── */
+    .task-scores {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .task-score-item {
+      font-size: 0.68rem;
+      padding: 1px 6px;
+      border-radius: 3px;
+      border: 1px solid var(--dim);
+      color: var(--sub);
+    }
+
+    /* ── RUN BAR ──────────────────────────── */
     .run-bar {
-      max-width: 1100px;
-      margin: 20px auto 0;
-      padding: 0 24px;
       display: flex;
       align-items: center;
       gap: 12px;
+      margin-bottom: 20px;
     }
     #run-btn {
-      padding: 10px 28px;
-      background: var(--blue);
+      padding: 7px 20px;
+      background: var(--accent);
       color: #fff;
       border: none;
-      border-radius: 8px;
-      font-family: var(--font);
-      font-size: 0.9rem;
-      font-weight: 700;
+      border-radius: 5px;
+      font-size: 0.82rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: opacity 0.15s;
+      font-family: inherit;
     }
-    #run-btn:hover    { background: #2563eb; }
-    #run-btn:disabled { background: var(--muted); cursor: not-allowed; }
-    #run-status { font-size: 0.8rem; color: var(--muted); }
+    #run-btn:hover    { opacity: 0.85; }
+    #run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    #run-status { font-size: 0.78rem; color: var(--sub); }
 
-    /* ── DEMO AREA ───────────────────────────────────── */
-    .demo-area {
-      max-width: 1100px;
-      margin: 20px auto 40px;
-      padding: 0 24px;
+    /* ── DEMO PANELS ──────────────────────── */
+    .demo-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 14px;
     }
     .panel {
-      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 6px;
+      background: var(--surface);
       overflow: hidden;
     }
     .panel-header {
-      padding: 12px 16px;
-      background: var(--card);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
       border-bottom: 1px solid var(--border);
-      font-size: 0.72rem;
-      letter-spacing: 2px;
+      background: var(--card);
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 1px;
       text-transform: uppercase;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      color: var(--sub);
     }
-    .panel-body { padding: 16px; min-height: 380px; }
+    .panel-body { padding: 14px; min-height: 340px; }
 
-    /* ── ALERTS ──────────────────────────────────────── */
-    #alerts-list { margin-bottom: 16px; }
-    .alert-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      padding: 8px 10px;
-      border-radius: 6px;
-      margin-bottom: 6px;
-      border-left: 3px solid;
-      font-size: 0.78rem;
-      line-height: 1.4;
-    }
-    .alert-p1 { border-color: var(--red);    background: #2d0a0a; }
-    .alert-p2 { border-color: var(--orange); background: #2d1500; }
-    .alert-p3 { border-color: var(--yellow); background: #2d2000; }
-    .sev {
-      font-weight: 700;
-      font-size: 0.65rem;
-      padding: 1px 6px;
-      border-radius: 4px;
-      white-space: nowrap;
-      margin-top: 1px;
-    }
-    .sev-p1 { background: var(--red);    color: #fff; }
-    .sev-p2 { background: var(--orange); color: #fff; }
-    .sev-p3 { background: var(--yellow); color: #000; }
-
-    /* ── SERVICES ────────────────────────────────────── */
-    #services-grid { margin-bottom: 16px; }
-    .svc-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 6px 0;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.78rem;
-    }
-    .svc-row:last-child { border-bottom: none; }
-    .svc-name { display: flex; align-items: center; gap: 8px; }
-    .svc-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .h-healthy  { background: var(--green); }
-    .h-degraded { background: var(--yellow); }
-    .h-down     { background: var(--red); }
-    .svc-meta { color: var(--muted); font-size: 0.72rem; }
-
-    /* ── LOG OUTPUT ──────────────────────────────────── */
-    #log-output {
-      background: #050b14;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 10px;
-      font-size: 0.72rem;
-      line-height: 1.6;
-      max-height: 140px;
-      overflow-y: auto;
-    }
-    .log-fatal { color: var(--red); }
-    .log-error { color: var(--orange); }
-    .log-warn  { color: var(--yellow); }
-    .log-info  { color: var(--muted); }
-    .log-result { color: var(--blue); font-style: italic; }
-
-    /* ── ACTION LOG ──────────────────────────────────── */
-    #action-log { max-height: 380px; overflow-y: auto; }
-    .action-entry {
-      padding: 10px 12px;
-      border-radius: 8px;
-      margin-bottom: 8px;
-      border: 1px solid var(--border);
-      background: var(--card);
-      font-size: 0.78rem;
-      animation: fadein 0.3s ease;
-    }
-    @keyframes fadein { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
-    .action-entry-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 4px;
-    }
-    .step-num { color: var(--muted); font-size: 0.68rem; }
-    .reward-pos { color: var(--green); font-weight: 700; }
-    .reward-neg { color: var(--red);   font-weight: 700; }
-    .reward-neu { color: var(--muted); }
-    .action-name { font-weight: 700; color: var(--blue); }
-    .action-target { color: var(--text); }
-
-    /* ── SCORE DISPLAY ───────────────────────────────── */
-    #score-display {
-      margin-top: 12px;
-      padding: 14px;
-      border-radius: 8px;
-      text-align: center;
-      display: none;
-    }
-    .score-success { background: #06401e; border: 1px solid var(--green); }
-    .score-fail    { background: #3b0a0a; border: 1px solid var(--red); }
-    .score-value   { font-size: 2rem; font-weight: 700; margin-bottom: 4px; }
-    .score-label   { font-size: 0.75rem; color: var(--muted); }
-
-    /* ── EMPTY STATES ─────────────────────────────────── */
-    .empty {
-      color: var(--muted);
-      font-size: 0.78rem;
-      text-align: center;
-      padding: 40px 0;
-    }
-
-    /* ── STEP PROGRESS ───────────────────────────────── */
-    .progress-bar-wrap {
-      height: 3px;
-      background: var(--border);
-      border-radius: 2px;
-      margin-bottom: 16px;
+    /* ── PROGRESS ─────────────────────────── */
+    .progress-wrap {
+      height: 2px;
+      background: var(--dim);
+      border-radius: 1px;
+      margin-bottom: 14px;
       overflow: hidden;
     }
     #progress-bar {
       height: 100%;
-      background: var(--blue);
+      background: var(--accent);
       width: 0%;
       transition: width 0.4s ease;
     }
 
-    /* ── FOOTER ──────────────────────────────────────── */
-    footer {
-      text-align: center;
-      padding: 24px;
-      border-top: 1px solid var(--border);
-      font-size: 0.75rem;
-      color: var(--muted);
+    /* ── ALERTS ───────────────────────────── */
+    .alert-item {
+      display: flex;
+      gap: 8px;
+      align-items: baseline;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--dim);
+      font-size: 0.78rem;
     }
-    footer a { color: var(--blue); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
+    .alert-item:last-child { border-bottom: none; }
+    .sev {
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .sev-p1 { background: #3d0f14; color: var(--red);    border: 1px solid var(--red); }
+    .sev-p2 { background: #2d1a00; color: var(--yellow); border: 1px solid var(--yellow); }
+    .sev-p3 { background: #1a1a00; color: #a89220;       border: 1px solid #a89220; }
 
-    /* ── RESPONSIVE ──────────────────────────────────── */
-    @media (max-width: 760px) {
-      .task-cards { grid-template-columns: 1fr; }
-      .demo-area  { grid-template-columns: 1fr; }
-      header h1   { font-size: 1.6rem; }
+    /* ── SERVICES ─────────────────────────── */
+    .svc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      border-bottom: 1px solid var(--dim);
+      font-size: 0.78rem;
+    }
+    .svc-row:last-child { border-bottom: none; }
+    .svc-left { display: flex; align-items: center; gap: 8px; }
+    .svc-dot  { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .h-healthy  { background: var(--green); }
+    .h-degraded { background: var(--yellow); }
+    .h-down     { background: var(--red); }
+    .svc-meta   { color: var(--sub); font-size: 0.72rem; font-family: 'SF Mono', monospace; }
+
+    /* ── LOG BOX ──────────────────────────── */
+    #log-output {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 10px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.7rem;
+      line-height: 1.6;
+      max-height: 120px;
+      overflow-y: auto;
+      color: var(--sub);
+    }
+    .log-fatal  { color: var(--red); }
+    .log-error  { color: #f0883e; }
+    .log-warn   { color: var(--yellow); }
+    .log-info   { color: var(--sub); }
+    .log-result { color: var(--accent); }
+
+    /* ── ACTION LOG ───────────────────────── */
+    #action-log { max-height: 340px; overflow-y: auto; }
+    .action-entry {
+      padding: 9px 10px;
+      border: 1px solid var(--dim);
+      border-radius: 5px;
+      margin-bottom: 6px;
+      background: var(--card);
+      animation: fadein 0.25s ease;
+    }
+    @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; } }
+    .action-top {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 3px;
+      font-size: 0.68rem;
+      color: var(--sub);
+    }
+    .action-body {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.78rem;
+    }
+    .a-type   { color: var(--accent); }
+    .a-target { color: var(--text); }
+    .a-param  { color: var(--yellow); }
+    .r-pos { color: var(--green); font-weight: 600; }
+    .r-neg { color: var(--red);   font-weight: 600; }
+    .r-neu { color: var(--sub); }
+
+    /* ── SCORE BOX ────────────────────────── */
+    #score-display {
+      margin-top: 10px;
+      padding: 12px 14px;
+      border-radius: 5px;
+      display: none;
+    }
+    .score-success { background: #12261e; border: 1px solid #2ea043; }
+    .score-fail    { background: #2d1419; border: 1px solid var(--red); }
+    .score-num     { font-size: 1.6rem; font-weight: 700; letter-spacing: -1px; }
+    .score-lbl     { font-size: 0.75rem; color: var(--sub); margin-top: 2px; }
+
+    /* ── EMPTY ────────────────────────────── */
+    .empty { color: var(--sub); font-size: 0.78rem; padding: 30px 0; text-align: center; }
+
+    /* ── FOOTER ───────────────────────────── */
+    footer {
+      max-width: 1100px;
+      margin: 32px auto 0;
+      padding: 20px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--sub);
+    }
+    footer a { color: var(--sub); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+    .footer-links { display: flex; gap: 20px; }
+
+    @media (max-width: 720px) {
+      .task-grid { grid-template-columns: 1fr; }
+      .demo-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-<!-- ── HEADER ──────────────────────────────────────────── -->
+<!-- HEADER -->
 <header>
-  <h1>🚨 SRE Incident Response <span>OpenEnv</span></h1>
-  <p>A reinforcement learning environment where AI agents triage real production incidents</p>
-  <div class="badges">
-    <span class="badge badge-blue">OpenEnv Compliant</span>
-    <span class="badge badge-green">5 Tasks</span>
-    <span class="badge badge-orange">Meta PyTorch Hackathon</span>
-    <span class="badge badge-yellow">Easy → Hard</span>
+  <div class="header-top">
+    <h1>SRE Incident Response <span>/ OpenEnv</span></h1>
   </div>
-  <div id="status-badge">
-    <div class="dot"></div>
-    <span id="status-text">Checking...</span>
+  <p>A reinforcement learning environment where AI agents triage production incidents</p>
+  <div class="meta-row">
+    <div class="meta-item">
+      <div class="meta-dot"></div>
+      <span id="status-text">Checking...</span>
+    </div>
+    <span class="tag">5 Tasks</span>
+    <span class="tag">OpenEnv Compliant</span>
+    <span class="tag">Meta PyTorch Hackathon</span>
+    <span class="score-tag">Baseline Avg Score: 0.720</span>
   </div>
 </header>
 
-<!-- ── TASK SELECTOR ────────────────────────────────────── -->
-<div class="task-section">
-  <div class="section-label">Select a task to watch the agent solve it live</div>
-  <div class="task-cards">
+<!-- MAIN -->
+<div class="page">
+
+  <!-- Task selector -->
+  <div class="section-title" style="margin-top:8px">Select task</div>
+  <div class="task-grid">
     <div class="task-card active" data-task="single_service_crash" onclick="selectTask(this)">
-      <div class="task-card-top">
+      <div class="task-card-header">
         <h3>Single Service Crash</h3>
         <span class="diff diff-easy">Easy</span>
       </div>
-      <p>payment-api is OOMKilled. Query logs, identify the crash, restart the service.</p>
+      <p>payment-api OOMKilled. Query logs, identify the crash, restart.</p>
+      <div class="task-scores">
+        <span class="task-score-item">Score 1.000</span>
+        <span class="task-score-item">2 steps</span>
+      </div>
     </div>
     <div class="task-card" data-task="cascading_failure" onclick="selectTask(this)">
-      <div class="task-card-top">
+      <div class="task-card-header">
         <h3>Cascading Failure</h3>
         <span class="diff diff-medium">Medium</span>
       </div>
-      <p>order-service down because inventory-api crashed. Fix root cause first, then restart dependent.</p>
+      <p>order-service down because inventory-api failed. Fix root cause first.</p>
+      <div class="task-scores">
+        <span class="task-score-item">Score 1.000</span>
+        <span class="task-score-item">6 steps</span>
+      </div>
     </div>
     <div class="task-card" data-task="tls_certificate_expiry" onclick="selectTask(this)">
-      <div class="task-card-top">
+      <div class="task-card-header">
         <h3>TLS Certificate Expiry</h3>
         <span class="diff diff-hard">Hard</span>
       </div>
-      <p>91% user failure. api-gateway shows healthy internally — TLS cert expired. Recent deploy is a red herring.</p>
-    </div>
-  </div>
-</div>
-
-<!-- ── RUN BAR ───────────────────────────────────────────── -->
-<div class="run-bar">
-  <button id="run-btn" onclick="runDemo()">▶ Run Demo</button>
-  <span id="run-status">Pick a task and watch the AI agent diagnose and fix the incident in real time.</span>
-</div>
-
-<!-- ── DEMO AREA ─────────────────────────────────────────── -->
-<div class="demo-area">
-
-  <!-- LEFT: Environment State -->
-  <div class="panel">
-    <div class="panel-header">
-      <span>Environment State</span>
-      <span id="step-counter" style="color:var(--blue)"></span>
-    </div>
-    <div class="panel-body">
-      <div class="progress-bar-wrap"><div id="progress-bar"></div></div>
-
-      <div class="section-label">Active Alerts</div>
-      <div id="alerts-list"><div class="empty">— Run a demo to see live alerts —</div></div>
-
-      <div class="section-label" style="margin-top:14px">Services</div>
-      <div id="services-grid"><div class="empty">—</div></div>
-
-      <div class="section-label" style="margin-top:14px">Output</div>
-      <div id="log-output" style="color:var(--muted);font-size:0.72rem;padding:10px;">
-        — Log and action output will appear here —
+      <p>91% user failure. Gateway shows healthy — TLS cert expired. Deploy is a red herring.</p>
+      <div class="task-scores">
+        <span class="task-score-item">Score 0.850</span>
+        <span class="task-score-item">5 steps</span>
       </div>
     </div>
   </div>
 
-  <!-- RIGHT: Agent Actions -->
-  <div class="panel">
-    <div class="panel-header">
-      <span>Agent Actions</span>
-      <span id="running-score" style="color:var(--green)"></span>
-    </div>
-    <div class="panel-body">
-      <div id="action-log">
-        <div class="empty">— The agent's step-by-step reasoning will appear here —</div>
-      </div>
-      <div id="score-display">
-        <div class="score-value" id="final-score"></div>
-        <div class="score-label" id="final-label"></div>
-      </div>
-    </div>
+  <!-- Run bar -->
+  <div class="run-bar">
+    <button id="run-btn" onclick="runDemo()">Run Demo</button>
+    <span id="run-status">Select a task above and run to watch the agent work live.</span>
   </div>
 
+  <!-- Demo panels -->
+  <div class="demo-grid">
+
+    <!-- Left: Environment -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>Environment State</span>
+        <span id="step-counter" style="color:var(--accent);font-size:0.68rem"></span>
+      </div>
+      <div class="panel-body">
+        <div class="progress-wrap"><div id="progress-bar"></div></div>
+
+        <div class="section-title">Active Alerts</div>
+        <div id="alerts-list"><div class="empty">—</div></div>
+
+        <div class="section-title" style="margin-top:14px">Services</div>
+        <div id="services-grid"><div class="empty">—</div></div>
+
+        <div class="section-title" style="margin-top:14px">Output</div>
+        <div id="log-output">—</div>
+      </div>
+    </div>
+
+    <!-- Right: Agent -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>Agent Actions</span>
+        <span id="running-score" style="color:var(--green);font-size:0.68rem"></span>
+      </div>
+      <div class="panel-body">
+        <div id="action-log"><div class="empty">—</div></div>
+        <div id="score-display">
+          <div class="score-num" id="final-score"></div>
+          <div class="score-lbl" id="final-label"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
-<!-- ── FOOTER ────────────────────────────────────────────── -->
+<!-- FOOTER -->
 <footer>
-  <a href="/docs" target="_blank">API Playground (Swagger)</a> &nbsp;·&nbsp;
-  <a href="/tasks" target="_blank">View All Tasks</a> &nbsp;·&nbsp;
-  <a href="/health" target="_blank">Health Check</a>
-  <br><br>
-  Built for the Meta PyTorch OpenEnv Hackathon &nbsp;·&nbsp; SRE Incident Response Environment v1.0.0
+  <span>SRE Incident Response v1.0.0 — Meta PyTorch OpenEnv Hackathon</span>
+  <div class="footer-links">
+    <a href="/docs" target="_blank">API Docs</a>
+    <a href="/tasks" target="_blank">Tasks</a>
+    <a href="/health" target="_blank">Health</a>
+  </div>
 </footer>
 
 <script>
-  // ── Task definitions with correct action sequences ──────
   const TASKS = {
     single_service_crash: {
       maxSteps: 10,
       actions: [
-        { action_type: 'query_logs',      target_service: 'payment-api',  parameters: {} },
-        { action_type: 'restart_service', target_service: 'payment-api',  parameters: {} },
+        { action_type: 'query_logs',      target_service: 'payment-api', parameters: {} },
+        { action_type: 'restart_service', target_service: 'payment-api', parameters: {} },
       ]
     },
     cascading_failure: {
@@ -467,10 +482,10 @@
     tls_certificate_expiry: {
       maxSteps: 20,
       actions: [
-        { action_type: 'query_logs',      target_service: 'frontend',    parameters: {} },
-        { action_type: 'query_logs',      target_service: 'api-gateway', parameters: {} },
-        { action_type: 'query_metrics',   target_service: 'api-gateway', parameters: { window_minutes: 120 } },
-        { action_type: 'apply_fix',       target_service: 'api-gateway', parameters: { fix_id: 'rotate_certificate' } },
+        { action_type: 'query_logs',    target_service: 'frontend',    parameters: {} },
+        { action_type: 'query_logs',    target_service: 'api-gateway', parameters: {} },
+        { action_type: 'query_metrics', target_service: 'api-gateway', parameters: { window_minutes: 120 } },
+        { action_type: 'apply_fix',     target_service: 'api-gateway', parameters: { fix_id: 'rotate_certificate' } },
       ]
     }
   };
@@ -483,190 +498,170 @@
     document.querySelectorAll('.task-card').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
     selectedTask = el.dataset.task;
-    resetDisplay();
+    reset();
   }
 
-  function resetDisplay() {
-    document.getElementById('alerts-list').innerHTML     = '<div class="empty">— Run a demo to see live alerts —</div>';
-    document.getElementById('services-grid').innerHTML   = '<div class="empty">—</div>';
-    document.getElementById('log-output').innerHTML      = '— Log and action output will appear here —';
-    document.getElementById('log-output').style.color    = 'var(--muted)';
-    document.getElementById('action-log').innerHTML      = '<div class="empty">— The agent\'s step-by-step reasoning will appear here —</div>';
+  function reset() {
+    document.getElementById('alerts-list').innerHTML   = '<div class="empty">—</div>';
+    document.getElementById('services-grid').innerHTML = '<div class="empty">—</div>';
+    document.getElementById('log-output').textContent  = '—';
+    document.getElementById('action-log').innerHTML    = '<div class="empty">—</div>';
     document.getElementById('score-display').style.display = 'none';
-    document.getElementById('running-score').textContent = '';
-    document.getElementById('step-counter').textContent  = '';
-    document.getElementById('progress-bar').style.width  = '0%';
-    document.getElementById('run-status').textContent    = 'Pick a task and watch the AI agent diagnose and fix the incident in real time.';
+    document.getElementById('running-score').textContent   = '';
+    document.getElementById('step-counter').textContent    = '';
+    document.getElementById('progress-bar').style.width    = '0%';
+    document.getElementById('progress-bar').style.background = 'var(--accent)';
+    document.getElementById('run-status').textContent = 'Select a task above and run to watch the agent work live.';
   }
 
-  // ── Health check on load ────────────────────────────────
   async function checkHealth() {
-    const el = document.getElementById('status-text');
     try {
       const r = await fetch('/health');
       const d = await r.json();
-      el.textContent = d.status === 'ok' ? 'Live & Running' : 'Degraded';
+      document.getElementById('status-text').textContent = d.status === 'ok' ? 'Live' : 'Degraded';
     } catch {
-      el.textContent = 'Unreachable';
-      document.querySelector('.dot').style.background = 'var(--red)';
+      document.getElementById('status-text').textContent = 'Unreachable';
+      document.querySelector('.meta-dot').style.background = 'var(--red)';
     }
   }
 
-  // ── Render helpers ──────────────────────────────────────
   function renderAlerts(alerts) {
     const el = document.getElementById('alerts-list');
     const firing = alerts.filter(a => a.firing);
     if (!firing.length) {
-      el.innerHTML = '<div style="color:var(--green);font-size:0.78rem;padding:6px 0">✓ All alerts resolved</div>';
+      el.innerHTML = '<div style="color:var(--green);font-size:0.78rem;padding:6px 0">All alerts resolved</div>';
       return;
     }
     el.innerHTML = firing.map(a => `
-      <div class="alert-item alert-${a.severity.toLowerCase()}">
+      <div class="alert-item">
         <span class="sev sev-${a.severity.toLowerCase()}">${a.severity}</span>
         <span>${a.message}</span>
       </div>`).join('');
   }
 
   function renderServices(services) {
-    const el = document.getElementById('services-grid');
-    el.innerHTML = services.map(s => `
+    document.getElementById('services-grid').innerHTML = services.map(s => `
       <div class="svc-row">
-        <div class="svc-name">
+        <div class="svc-left">
           <div class="svc-dot h-${s.health}"></div>
           <span>${s.name}</span>
         </div>
-        <span class="svc-meta">err ${(s.error_rate * 100).toFixed(1)}% · cpu ${s.cpu_pct}%</span>
+        <span class="svc-meta">err ${(s.error_rate*100).toFixed(1)}%</span>
       </div>`).join('');
   }
 
-  function renderOutput(obs, reward) {
+  function renderOutput(obs) {
     const el = document.getElementById('log-output');
-    el.style.color = '';
-
     if (obs.recent_logs && obs.recent_logs.length) {
-      el.innerHTML = obs.recent_logs.slice(-6).map(l => {
-        const cls = `log-${l.level.toLowerCase()}`;
-        return `<div class="${cls}">[${l.level}] ${l.service}: ${l.message}</div>`;
-      }).join('');
+      el.innerHTML = obs.recent_logs.slice(-5).map(l =>
+        `<div class="log-${l.level.toLowerCase()}">[${l.level}] ${l.service}: ${l.message}</div>`
+      ).join('');
     } else if (obs.last_action_result) {
       el.innerHTML = `<div class="log-result">${obs.last_action_result}</div>`;
     }
   }
 
-  function addActionEntry(step, action, reward, maxSteps) {
+  function addStep(step, action, reward, maxSteps) {
     const log = document.getElementById('action-log');
     if (log.querySelector('.empty')) log.innerHTML = '';
 
     const params = action.parameters;
-    const extra = params.fix_id
-      ? ` fix_id=<b style="color:var(--yellow)">${params.fix_id}</b>`
-      : params.window_minutes
-        ? ` window=<b style="color:var(--yellow)">${params.window_minutes}m</b>`
-        : '';
+    let extra = '';
+    if (params.fix_id)        extra = `, <span class="a-param">'${params.fix_id}'</span>`;
+    else if (params.window_minutes) extra = `, <span class="a-param">window=${params.window_minutes}m</span>`;
 
-    const rewardVal = typeof reward === 'number' ? reward : 0;
-    const rewardCls = rewardVal > 0 ? 'reward-pos' : rewardVal < 0 ? 'reward-neg' : 'reward-neu';
-    const rewardStr = rewardVal > 0 ? `+${rewardVal.toFixed(2)}` : rewardVal.toFixed(2);
+    const r = typeof reward === 'number' ? reward : 0;
+    const rcls = r > 0 ? 'r-pos' : r < 0 ? 'r-neg' : 'r-neu';
+    const rstr = r > 0 ? `+${r.toFixed(2)}` : r.toFixed(2);
 
-    const entry = document.createElement('div');
-    entry.className = 'action-entry';
-    entry.innerHTML = `
-      <div class="action-entry-top">
-        <span class="step-num">Step ${step} / ${maxSteps}</span>
-        <span class="${rewardCls}">reward ${rewardStr}</span>
+    const div = document.createElement('div');
+    div.className = 'action-entry';
+    div.innerHTML = `
+      <div class="action-top">
+        <span>Step ${step} / ${maxSteps}</span>
+        <span class="${rcls}">${rstr}</span>
       </div>
-      <div>
-        <span class="action-name">${action.action_type}</span>
-        <span class="action-target">('${action.target_service}'${extra})</span>
+      <div class="action-body">
+        <span class="a-type">${action.action_type}</span>(<span class="a-target">'${action.target_service}'</span>${extra})
       </div>`;
-    log.appendChild(entry);
+    log.appendChild(div);
     log.scrollTop = log.scrollHeight;
 
+    document.getElementById('step-counter').textContent = `step ${step}`;
     document.getElementById('progress-bar').style.width = `${(step / maxSteps) * 100}%`;
-    document.getElementById('step-counter').textContent = `Step ${step}`;
   }
 
-  function showFinalScore(score, success) {
+  function showScore(score, success) {
     const el = document.getElementById('score-display');
-    el.className = `score-display ${success ? 'score-success' : 'score-fail'}`;
+    el.className = 'score-display ' + (success ? 'score-success' : 'score-fail');
     el.style.display = 'block';
     document.getElementById('final-score').textContent = score.toFixed(3);
     document.getElementById('final-label').textContent = success
-      ? '✓ Incident resolved successfully'
-      : '✗ Incident not fully resolved';
+      ? 'Incident resolved' : 'Not fully resolved';
     document.getElementById('final-label').style.color = success ? 'var(--green)' : 'var(--red)';
     document.getElementById('progress-bar').style.width = '100%';
     document.getElementById('progress-bar').style.background = success ? 'var(--green)' : 'var(--red)';
   }
 
-  // ── Main demo runner ────────────────────────────────────
   async function runDemo() {
     if (running) return;
     running = true;
-
     const btn = document.getElementById('run-btn');
-    const statusEl = document.getElementById('run-status');
     btn.disabled = true;
-    btn.textContent = '⏳ Running...';
-    resetDisplay();
+    btn.textContent = 'Running...';
+    reset();
 
     const task = TASKS[selectedTask];
-    let totalReward = 0;
+    document.getElementById('run-status').textContent = 'Starting episode...';
 
     try {
-      // Reset
-      statusEl.textContent = 'Starting episode...';
       const resetRes = await fetch('/reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ task_id: selectedTask })
       });
-      if (!resetRes.ok) throw new Error(`Reset failed: ${resetRes.status}`);
+      if (!resetRes.ok) throw new Error(`Reset failed (${resetRes.status})`);
       let obs = await resetRes.json();
 
       renderAlerts(obs.alerts || []);
       renderServices(obs.services || []);
-      statusEl.textContent = 'Episode started — agent is working...';
+      document.getElementById('run-status').textContent = 'Agent is working...';
 
-      // Steps
       for (let i = 0; i < task.actions.length; i++) {
         await new Promise(r => setTimeout(r, 1400));
-
         const action = task.actions[i];
+
         const stepRes = await fetch('/step', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(action)
         });
-        if (!stepRes.ok) throw new Error(`Step failed: ${stepRes.status}`);
+        if (!stepRes.ok) throw new Error(`Step failed (${stepRes.status})`);
         const result = await stepRes.json();
 
         const reward = result.reward?.value ?? 0;
-        totalReward += reward;
         obs = result.observation || obs;
+        const score = result.info?.score ?? 0;
 
-        addActionEntry(i + 1, action, reward, task.maxSteps);
+        addStep(i + 1, action, reward, task.maxSteps);
         renderAlerts(obs.alerts || []);
         renderServices(obs.services || []);
-        renderOutput(obs, reward);
-
-        const score = result.info?.score ?? 0;
+        renderOutput(obs);
         document.getElementById('running-score').textContent = `score ${score.toFixed(3)}`;
 
         if (result.done) {
-          showFinalScore(score, score >= 0.8);
-          statusEl.textContent = score >= 0.8
-            ? '✓ Incident resolved! Agent succeeded.'
-            : `Episode ended. Final score: ${score.toFixed(3)}`;
+          showScore(score, score >= 0.8);
+          document.getElementById('run-status').textContent =
+            score >= 0.8 ? 'Incident resolved.' : `Ended — score ${score.toFixed(3)}`;
           break;
         }
       }
     } catch (err) {
-      statusEl.textContent = `Error: ${err.message}. The server may be waking up — try again.`;
+      document.getElementById('run-status').textContent = `${err.message} — try again.`;
     }
 
     btn.disabled = false;
-    btn.textContent = '▶ Run Again';
+    btn.textContent = 'Run Again';
     running = false;
   }
 

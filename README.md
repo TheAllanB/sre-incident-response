@@ -1,3 +1,17 @@
+---
+title: SRE Incident Response
+emoji: 🚨
+colorFrom: red
+colorTo: orange
+sdk: docker
+pinned: false
+tags:
+  - openenv
+  - sre
+  - incident-response
+  - reinforcement-learning
+---
+
 # SRE Incident Response Environment
 
 An OpenEnv-compliant environment simulating real-world SRE on-call incident triage. An AI agent
